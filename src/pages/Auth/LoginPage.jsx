@@ -3,7 +3,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { theme } from "../../theme";
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, error } = useAuth();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -55,6 +55,15 @@ const LoginPage = () => {
               <Box component={"span"} color={theme.palette.error.main}></Box>
             </Box>
           </Box>
+          {error ? (
+            <Box
+              margin="15px 0px"
+              color={theme.palette.error.main}
+              textAlign="center"
+            >
+              Invalid email/password. Please try again.
+            </Box>
+          ) : null}
           <Button type="submit" style={styles.submitButton} variant="contained">
             Sign In
           </Button>

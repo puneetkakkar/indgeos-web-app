@@ -1,17 +1,31 @@
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUserDetails, loginUser } from "../services/authService";
 import { useLocalStorage } from "./useLocalStorage";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children, userData }) => {
+  const [error, setError] = useState(null);
   const [user, setUser] = useLocalStorage("user", userData);
   const navigate = useNavigate();
 
   // call this function when you want to authenticate the user
   const login = async (data) => {
-    setUser(data);
-    navigate("/", { replace: true });
+    try {
+      const { data = null } = await loginUser();
+      const userData = await getUserDetails(data?.type, data?.token);
+
+      setUser(userData);
+      navigate("/", { replace: true });
+    } catch (error) {
+      setError(
+        error.response?.data?.message ??
+          "Invalid email/password. Please try again."
+      );
+
+      setTimeout(() => setError(null), 5000);
+    }
   };
 
   // call this function to sign out logged in user
@@ -25,8 +39,9 @@ export const AuthProvider = ({ children, userData }) => {
       user,
       login,
       logout,
+      error,
     }),
-    [user]
+    [user, error]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
